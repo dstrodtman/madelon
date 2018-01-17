@@ -25,6 +25,7 @@ Because of the massive size of DSI, UCI was used for early investigations into h
 Initial benchmark scores were fit for 4 models on each subset of the data. Additionally, because of the small size of the dataset, benchmarks were calculated using the entire training set. In all cases, data were scaled using StandardScaler from sklearn, which standardizes features by removing the mean and scaling to unit variance, and then passed to the respective classification model from sklearn using the default hyperparameters.
 
 **Benchmarking Scores**
+
 | Model			| Sample	| Score	|
 | ---			| ---		| ---	|
 | Logistic Regression 	| 1 		| 52.66	|
@@ -34,5 +35,15 @@ Initial benchmark scores were fit for 4 models on each subset of the data. Addit
 | Decision Tree		| 1		| 66.66	| 
 | Decision Tree		| 2 		| 66.16 |
 | Decision Tree		| 3		| 63.33 |
+Decision Tree | Full | 76.50
+K Neighbors | 1 | 55.16
+K Neighbors | 2 | 54.66
+K Neighbors | 3 | 52.00
+K Neighbors | Full | 50.66
+Support Vector | 1 | 57.33
+Support Vector | 2 | 55.16
+Support Vector | 3 | 57.83
+Support Vector | Full | 58.16
+
 
 
