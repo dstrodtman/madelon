@@ -172,4 +172,57 @@ Support Vector | 59.13
 
 Because DSI was created with the same basic function as UCI, the function used to identify important features was once again applied. It was cross validated in all three samples.
 
+![Correlation heat map](https://github.com/dstrodtman/madelon/blob/master/images/dsi_feat_corr.png)
+*Fig 4. A correlation heatmap for the DSI data. Note that the many repetitions of patterns of correlation are not observed in this dataset.*
 
+![Histogram of important features](https://github.com/dstrodtman/madelon/blob/master/images/dsi_feat_hist.png)
+*Fig 5. While some of the important features in the DSI dataset show a slight deviation from a true Gaussian distribution, no bimodal distributions are present in the data.*
+
+![Mean and STD of important features](https://github.com/dstrodtman/madelon/blob/master/images/dsi_feat_mean.png)
+*Fig 6. The DSI data all demonstrate means very near zero and standard deviations suggesting that they were constructed using an algorithm based on the normal distribution.*
+
+SelectKBest performed very well on this dataset, with each sample identifying 17 of 20 important features. Select from Model also found 17 of the 20 features in each sample, but returned over 270 features out of the original 1000. Importantly, while some features appear in all of the samples, other features are present in only 1 or 2--this varies both between samples with the sample selection model and between models. Again, while these methods do fairly well at identifying relevant features, it is important to leverage domain knowledge to ensure the best results.
+
+### Testing Model Pipelines
+
+All samples of the data were passed through a similar processing pipeline to that used with UCI, which included scaling and principal component analysis with 5 fold cross validation.
+
+**Testing Models Scores**
+
+Model | Sample | Score
+--- | --- | ---
+Logistic Regression | 1 | 60.33
+Logistic Regression | 2 | 60.53
+Logistic Regression | 3 | 60.53
+Decision Tree | 1 | 71.39
+Decision Tree | 2 | 71.99
+Decision Tree | 3 | 70.53
+Decision Tree (no PCA) | 1 | 72.73
+Decision Tree (no PCA) | 2 | 72.33
+Decision Tree (no PCA) | 3 | 73.33
+K Neighbors | 1 | 79.93
+K Neighbors | 2 | 80.80
+K Neighbors | 3 | 81.20
+Support Vector | 1 | 81.53
+Support Vector | 2 | 81.99
+Support Vector | 3 | 81.39
+
+#### Logistic Regression
+
+Logistic regression performed above benchmark after the feature selection and PCA, but, as expected, is not a good model for this data.
+
+#### Decision Tree Classifier
+
+While DTC improved over the benchmark, it performs rather poorly on this data, and will not be further investigated.
+
+#### K Neighbors Classifier
+
+KNC shows the greatest improvement from the benchmark, and again scores nearly equally to SVC.
+
+#### Support Vector Classifier
+
+SVC shows some of the highest scores overall. However, because of the size of the dataset, SVC is not the best choice to process the full dataset because of the computation time associated with fitting the model.
+
+### Building Final DSI Model
+
+I chose to do an additional cross-validated grid search on the full DSI dataset to find the best number of neighbors to use for KNC. Based on the previous results from the samples and the UCI data, I felt this was the only hyperparameter that was likely to need to be further tuned. This model performed with 86.3% accuracy.
