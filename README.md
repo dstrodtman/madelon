@@ -1,86 +1,75 @@
-# Project 3: Feature Selection + Classification
+# A Demonstration of the Benefits of Feature Selection Using the Canonical Madelon Dataset
 
-### Domain and Data
+This investigation into relevant feature identification utilizes two datasets of differing scales to test different methods for feature selection and modeling, and demonstrates the impact that proper feature engineering can have on the predictive strength of models. My results indicate in two datasets that these processes can improve predictive ability from just above chance to over 85% accuracy by leveraging machine learning principles and domain specific knowledge.
 
-You're working as a data scientist with a research firm. You're firm is bidding on a big project that will involve working with thousands or possibly tens of thousands of features. You know it will be impossible to use conventional feature selection techniques. You propose that a way to win the contract is to demonstrate a capacity to identify relevant features using machine learning. Your boss says, "Great idea. Write it up." You figure that working with a synthetic dataset such as [Madelon](https://archive.ics.uci.edu/ml/datasets/Madelon) is an excellent way to demonstrate your abilities. 
+## The Data
+#### UCI Data
 
-#### Requirement
+The first dataset is the canonical Madelon dataset, maintained by and accessed from the University of California Irvine Machine Learning Repository <http://archive.ics.uci.edu/ml/datasets/madelon>. This dataset was previously used in the NIPS 2003 feature selection challenge, and so is well documented. A description provided by the UCI site:
 
-This work must be done on AWS.
+>"MADELON is an artificial dataset containing data points grouped in 32 clusters placed on the vertices of a five dimensional hypercube and randomly labeled +1 or -1. The five dimensions constitute 5 informative features. 15 linear combinations of those features were added to form a set of 20 (redundant) informative features. Based on those 20 features one must separate the examples into the 2 classes (corresponding to the +-1 labels). We added a number of distractor feature called 'probes' having no predictive power. The order of the features and patterns were randomized."
 
-### Problem Statement
+2000 instances are provided in the training dataset, with 600 additional instances provided for validation/testing.
 
-Your challenge here is to develop a series of models for two purposes:
+#### DSI Data
 
-1. for the purposes of identifying relevant features. 
-2. for the purposes of generating predictions from the model. 
+The second dataset was generated for the purposes of this project by a third party. The function utilized to create the data is based on the same math used to create Madelon, but the data varies in several ways, which will be discussed more below. Importantly, classes are assigned as 1 and 0, and I was naive to the specific parameters used to create the data (number of informative, redundant, and probe features). The feature space has been expanded to 1000, and 200k instances are included, which will be used to construct both the training and test sets.
 
-### Solution Statement
+Henceforth, these datasets will be referred to as UCI and DSI for brevity.
 
-Your final product will consist of:
+## UCI Data
+### Benchmarking
 
-1. A prepared report
-2. A series of Jupyter notebooks to be used to control your pipelines
+Because of the massive size of DSI, UCI was used for early investigations into how to best approach the data. 3 samples of 600 instances were taken from the training data to match the size of test data.
 
-### Tasks
+Initial benchmark scores were fit for 4 models on each subset of the data. Additionally, because of the small size of the dataset, benchmarks were calculated using the entire training set. In all cases, data were scaled using StandardScaler from sklearn, which standardizes features by removing the mean and scaling to unit variance, and then passed to the respective classification model from sklearn using the default hyperparameters.
 
-#### Data Manipulation
+**Benchmarking Scores**
 
-You should do substantive work on at least six subsets of the data. 
+| Model			| Sample	| Score	|
+| ---			| ---		| ---	|
+| Logistic Regression 	| 1 		| 52.66	|
+| Logistic Regression	| 2 		| 51.66 |
+| Logistic Regression 	| 3		| 55.83 |
+| Logistic Regression	| Full		| 57.99 |
+| Decision Tree		| 1		| 66.66	| 
+| Decision Tree		| 2 		| 66.16 |
+| Decision Tree		| 3		| 63.33 |
+Decision Tree | Full | 76.50
+K Neighbors | 1 | 55.16
+K Neighbors | 2 | 54.66
+K Neighbors | 3 | 52.00
+K Neighbors | Full | 50.66
+Support Vector | 1 | 57.33
+Support Vector | 2 | 55.16
+Support Vector | 3 | 57.83
+Support Vector | Full | 58.16
 
-- 3 sets of 10% of the data from the UCI Madelon set
-- 3 sets of 10% of the data from the Madelon set made available by your instructors
+#### Logistic Regression
 
-##### Prepared Report
+The LogisticRegression function from sklearn fits a regularized linear model to the data to make classification predictions. Prior knowledge about the multidimensional nature of the data suggests that this model should perform poorly, and benchmark scores confirm this. This provides a true benchmark with which to compare other data by essentially just drawing a line of best fit to the data to divide it into two classes.
 
-Your report should:
+#### Decision Tree Classifier
 
-1. be a pdf
-2. include EDA of each subset 
-   - EDA needs may be different depending upon subset or your approach to a solution
-3. present results from Step 1: Benchmarking
-4. present results from Step 2: Identify Salient Features
-5. present results from Step 3: Feature Importances
-6. present results from Step 4: Build Model
+The DecisionTreeClassifier (DTC) function from sklearn predicts the value of a target variable by using the observed class of instances to derive simple rules about how the data functions. Because this model learns from the data to make its decisions, it should be expected to perform better on noisy data--it can ignore noisy features entirely, and makes decisions based on those features that seem to inform class. In all subsets, benchmark scores were higher than those from logistic regression, and with the full training set, a score of 76.5% is attained due to the increased number of instances from which the model can learn.
 
-##### Jupyter Notebook, EDA 
+#### K Nearest Neighbors Classifier
 
-- perform EDA on each set as you see necessary
+The KNeighborsClassifier (KNC) function from sklearn stores the location and class of each observed instance and then uses these data to vote on the class of test points to predict class based on distance to previously observed points. With default parameters, results are only slightly above chance. This is be expected, as distances for class predictions are being measured in 500 dimensional space when the true function for the data is only 5 dimensions, and the signal is lost in the noise.
 
-##### Jupyter Notebook, Step 1 - Benchmarking
-- build pipeline to perform a naive fit for each of the base model classes:
-	- logistic regression
-	- decision tree
-	- k nearest neighbors
-	- support vector classifier
-- in order to do this, you will need to set a high `C` value in order to perform minimal regularization, in the case of logistic regression and support vector classifier.
+#### Support Vector Classifier
 
-##### Jupyter Notebook, Step 2 - Identify Features
-- Build feature selection pipelines using at least three different techniques
-- **NOTE**: these pipelines are being used for feature selection not prediction
-- Use the results from step 2 to discuss feature importance in the dataset
+The SVC function from sklearn uses a radial basis function kernel (by default) to make predictions of class using a subset of training points (this subset comprises the support vector). While observed disparity between training and test scores are similar to those seen with the decision tree classifier, SVC does not benefit from increasing the sample size as decision trees did. It suffers from a similar issue as KNC--all features are maintained in the subset of instances used as support vectors, so noisy features greatly impact the outcome.
 
-##### Jupyter Notebook, Step 3 - Testing Model Pipelines
-- Considering these results, develop a strategy for building a final predictive model
-- recommended approaches:
-    - Use feature selection to reduce the dataset to a manageable size then use conventional methods
-    - Use dimension reduction to reduce the dataset to a manageable size then use conventional methods
-    - Use an iterative model training method to use the entire dataset
-- This notebook should be a "playground" where you try various approaches to solving this problem
-   
-##### Jupyter Notebook, Step 4 - Build Model
-- Implement your final model
-- (Optionally) use the entire data set
+#### Summary
 
----
+On the whole, the noise in our data prevents effective classification. The only model that can inherently eliminate noise in high dimensional space performs best, but by engineering features it is likely that all scores will improve.
 
-### Requirements
+### Identifying Features
 
-- Many Jupyter Notebooks
-- A written report of your findings that detail the accuracy and assumptions of your model.
+Prior knowledge regarding the construction of the dataset provided the roadmap for a function to extract the 20 informative features out of the 500. While this exact technique will not generalize to most real-world datasets, it provides a nice benchmark against other methods for feature selection/reduction, and provides a good analogue to how domain knowledge can be leveraged alongside machine learning techniques to build better performing models.
 
----
+Using Pearson correlation scores between all of the features, I was able to identify features that correlated with each other above 50%. Because the probe features are random noise, all of these features drop out with this simple filter. This method provided the same results on 3 samples of the data as it did on the full dataset.
 
-### Suggestions
+By looking at the patterns of correlations between data, it is possible to determine that some of these features are repetitions of one another (the description of the data states that there are 5 true features, 5 redundant features, and 10 repetitions of these; I refer to these as 'feature bins').
 
-- Document **everything**.
