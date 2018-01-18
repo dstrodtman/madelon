@@ -73,3 +73,103 @@ Using Pearson correlation scores between all of the features, I was able to iden
 
 By looking at the patterns of correlations between data, it is possible to determine that some of these features are repetitions of one another (the description of the data states that there are 5 true features, 5 redundant features, and 10 repetitions of these; I refer to these as 'feature bins').
 
+![Correlation heat map](https://github.com/dstrodtman/madelon/blob/master/images/feat_corr.png)
+*Fig 1. This heatmap shows the correlation between the 20 features selected. The target is also included for reference, though it was not used for feature selection.*
+
+![Histogram of important features](https://github.com/dstrodtman/madelon/blob/master/images/feat_hist.png)
+*Fig 2. This figure shows the normalized histograms of the 20 relevant features from the UCI dataset. Most features show relatively normal or bimodal distribution.*
+
+![Mean and STD of important features](https://github.com/dstrodtman/madelon/blob/master/images/feat_mean.png)
+*Fig 3. This figure shows the means plotted with their standard deviations of the 20 informative UCI features. While the means fall within a fairly small range, the standard deviations vary greatly between features.*
+
+#### Select K Best
+
+The SelectKBest function from sklearn uses a linear model to test the individual effect of each feature on the target and then selects the number (K) of features input by the user. When specifying k=20, this model correctly identifies 13 of the 20 informative features, showing.
+
+#### Select From Model
+
+The SelectFromModel function from sklearn uses the feature importances returned by another model to make decisions about which features to keep. As DTC performed best in the benchmarks, this model is passed to SelectFromModel. With default setting, this method extracted 83 features, but importantly did extract 17 of the 20 informative features.
+
+#### Summary
+
+Combining the results of Select K Best and Select From Model reveals 14 overlapping features. Comparing this result to the informative features extracted with the correlation method shows that 13 of these features are informative. However, several of the feature bins are not captured by either of these feature selection models. While feature selection models do pretty well at reducing the feature space, ultimately domain knowledge should also be applied whenever possible to perform feature selection.
+
+### Principal Component Analysis
+
+Now that the features have been reduced to the 20 informative features and the true noise has been removed, it's possible for perform principle component analysis (PCA) to transform these features and further reduce dimensionality. Because the classes were assigned in 5 dimensional space and the redundant features are linear combinations of the 5 true features used to assign class, reducing the 20 features to 5 principal components should transform the data to the 5 most important dimensions.
+
+Note: While I explored using a radial basis function kernel to perform PCA with the UCI data, this method does not scale well and so was not explored on the DSI data. Implementation of an incremental process for using a radial basis function kernel to perform PCA could potentially integrate into a K Neighbors Classifier model the benefits observed from this kernel transformation in the Support Vector Classifier models described below.
+
+### Testing Model Pipelines
+
+Now that the informative features have been identified and the features have been reduced, the data is ready to be passed back through pipelines to identify the best models and hyperparameters for modeling the data.
+
+To find the best hyperparameters for approaching the full dataset, I ran each of the 3 samples taken from the data through a grid search with 5 fold cross validation, meaning that each of the 3 samples was used to simulate a training and test set of data 5 times for each of the hyperparameters searched. This method ensures that model selection is not biased by the test data and helps to identify the best likely hyperparameters that will generalize to the full UCI data and perform well when predicting unseen data. Data were run through all models used in benchmark testing.
+
+**Testing Models Scores**
+
+Model | Sample | Score
+--- | --- | ---
+Logistic Regression | 1 | 56.66
+Logistic Regression | 2 | 56.99
+Logistic Regression | 3 | 61.49
+Decision Tree | 1 | 71.99
+Decision Tree | 2 | 76.50
+Decision Tree | 3 | 75.00
+Decision Tree (no PCA) | 1 | 72.99
+Decision Tree (no PCA) | 2 | 73.16
+Decision Tree (no PCA) | 3 | 73.83
+K Neighbors | 1 | 91.33
+K Neighbors | 2 | 89.33
+K Neighbors | 3 | 88.16
+Support Vector | 1 | 88.50
+Support Vector | 2 | 88.50
+Support Vector | 3 | 89.00
+
+#### Logistic Regression
+
+The results for logistic regression hardly improved from benchmark testing. Because of the multidimensional nature of the data and the linear fit used by logistic regression, this is unlikely to improve. This model will be removed from further analyses.
+
+#### Decision Tree Classifier
+
+On the samples of the data, DTC performed slightly better than the benchmark scores. Because the best scores were obtained on the benchmark using the full dataset, this model will continue to be explored moving forward, as the low scores are likely a result of an insufficient sample size.
+
+#### K Neighbors Classifier
+
+KNC performed the best on the sample data after it had been transformed using PCA. This was my expected result because of the nature of the way in which the data was generated. With more instances in the training set, the score should continue to improve.
+
+#### Support Vector Classifier
+
+SVC also performed very well on the sample data, though slightly worse than KNC. This model will also be tested on the full dataset.
+
+### Building Final UCI Model
+
+SVC and KNC provided the two best models for predicting class in the UCI data. In a dataset of this size, both models converged relatively quickly, although I am inclined to continue to favor KNC because of the known nature of the data.
+
+**Final Scores**
+
+Model | Score
+--- | ---
+Decision Tree | 83.83
+K Neighbors | 92.00
+Support Vector | 93.16
+
+## DSI Dataset
+### Sampling and Benchmarking
+
+Because of the enormous size of the DSI data, only 3% of the the total data was used in each sample. Benchmark results perform similarly to the samples from UCI.
+
+**Benchmark Scores**
+
+Model | Score
+--- | ---
+Logistic Regression | 54.86
+Decision Tree | 63.13
+K Neighbors | 55.20
+Support Vector | 59.13
+
+### Feature Selection
+
+Because DSI was created with the same basic function as UCI, the function used to identify important features was once again applied. It was cross validated in all three samples.
+
+
