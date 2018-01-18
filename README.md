@@ -45,5 +45,31 @@ Support Vector | 2 | 55.16
 Support Vector | 3 | 57.83
 Support Vector | Full | 58.16
 
+#### Logistic Regression
 
+The LogisticRegression function from sklearn fits a regularized linear model to the data to make classification predictions. Prior knowledge about the multidimensional nature of the data suggests that this model should perform poorly, and benchmark scores confirm this. This provides a true benchmark with which to compare other data by essentially just drawing a line of best fit to the data to divide it into two classes.
+
+#### Decision Tree Classifier
+
+The DecisionTreeClassifier (DTC) function from sklearn predicts the value of a target variable by using the observed class of instances to derive simple rules about how the data functions. Because this model learns from the data to make its decisions, it should be expected to perform better on noisy data--it can ignore noisy features entirely, and makes decisions based on those features that seem to inform class. In all subsets, benchmark scores were higher than those from logistic regression, and with the full training set, a score of 76.5% is attained due to the increased number of instances from which the model can learn.
+
+#### K Nearest Neighbors Classifier
+
+The KNeighborsClassifier (KNC) function from sklearn stores the location and class of each observed instance and then uses these data to vote on the class of test points to predict class based on distance to previously observed points. With default parameters, results are only slightly above chance. This is be expected, as distances for class predictions are being measured in 500 dimensional space when the true function for the data is only 5 dimensions, and the signal is lost in the noise.
+
+#### Support Vector Classifier
+
+The SVC function from sklearn uses a radial basis function kernel (by default) to make predictions of class using a subset of training points (this subset comprises the support vector). While observed disparity between training and test scores are similar to those seen with the decision tree classifier, SVC does not benefit from increasing the sample size as decision trees did. It suffers from a similar issue as KNC--all features are maintained in the subset of instances used as support vectors, so noisy features greatly impact the outcome.
+
+#### Summary
+
+On the whole, the noise in our data prevents effective classification. The only model that can inherently eliminate noise in high dimensional space performs best, but by engineering features it is likely that all scores will improve.
+
+### Identifying Features
+
+Prior knowledge regarding the construction of the dataset provided the roadmap for a function to extract the 20 informative features out of the 500. While this exact technique will not generalize to most real-world datasets, it provides a nice benchmark against other methods for feature selection/reduction, and provides a good analogue to how domain knowledge can be leveraged alongside machine learning techniques to build better performing models.
+
+Using Pearson correlation scores between all of the features, I was able to identify features that correlated with each other above 50%. Because the probe features are random noise, all of these features drop out with this simple filter. This method provided the same results on 3 samples of the data as it did on the full dataset.
+
+By looking at the patterns of correlations between data, it is possible to determine that some of these features are repetitions of one another (the description of the data states that there are 5 true features, 5 redundant features, and 10 repetitions of these; I refer to these as 'feature bins').
 
